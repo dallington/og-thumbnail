@@ -86,7 +86,9 @@ export default Vue.extend({
     // Precisa de anotação por causa do `this` no retorno
     getBorderColor(): string {
       console.log(this.$route.query);
-      return `#${this.$route.query.color}`;
+      return this.$route.query.color
+        ? `#${this.$route.query.color}`
+        : "#000000";
     }
   }
 });
