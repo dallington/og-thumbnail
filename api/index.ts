@@ -1,12 +1,27 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
-
-const puppeteer = require('puppeteer')
+import puppeteer, { Page } from 'puppeteer-core'
+import { getOptions } from './_lib/chromeOptions'
 
 function delay (time: number) {
   return new Promise((resolve) => {
     setTimeout(() => resolve(true), time)
   })
 };
+
+let _page: Page | null
+
+async function getPage (isDev: boolean): Promise<Page> {
+  if (_page) {
+    return _page
+  }
+
+  const options = await getOptions(isDev)
+  const browser = await puppeteer.launch(options)
+
+  _page = await browser.newPage()
+
+  return _page
+}
 
 type TypeString = (string | string[]);
 
@@ -27,12 +42,10 @@ const generatePreview = async (request: VercelRequest, response: VercelResponse)
   }
 
   // Spawn a new headless browser
-  const browser = await puppeteer.launch()
-  const page = await browser.newPage()
-  await page.setViewport({
-    width: 1600,
-    height: 800
-  })
+  const page = await getPage(isDev)
+
+  await page.setViewport({ width: 1200, height: 800 })
+  await page.evaluateHandle('document.fonts.ready')
 
   const url = new URL('https://og-thumbnail.vercel.app/OpenGraph')
   Object.keys(params)
@@ -45,8 +58,8 @@ const generatePreview = async (request: VercelRequest, response: VercelResponse)
 
   await page.goto(url.toString(), { waitUntil: 'domcontentloaded' })
   await delay(1000)
-  const imageBuffer = await page.screenshot()
-  await browser.close()
+  const imageBuffer = await page.screenshot({ type: 'png' })
+  await page.close()
 
   response.send(`<img src="data:image/png;base64, ${imageBuffer.toString('base64')}" />`)
 
