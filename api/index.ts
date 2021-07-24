@@ -42,7 +42,7 @@ const generatePreview = async (request: VercelRequest, response: VercelResponse)
   }
 
   // Spawn a new headless browser
-  const page = await getPage(isDev)
+  const page = await getPage(false)
 
   await page.setViewport({ width: 1200, height: 800 })
   await page.evaluateHandle('document.fonts.ready')
