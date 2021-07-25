@@ -1,6 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import puppeteer, { Page } from 'puppeteer-core'
-import { Cloudinary } from '@cloudinary/base'
 import { getOptions } from './_lib/chromeOptions'
 const cloudinary = require('cloudinary').v2
 const hash = require('object-hash')
@@ -15,14 +14,6 @@ cloudinary.config({
   cloud_name: 'dall-dev',
   api_key: '565891635356186',
   api_secret: 'NfdSs_MBzqxvP_RHt1vCA6GXYpk'
-})
-
-const cld = new Cloudinary({
-  cloud: {
-    cloudName: 'dall-dev',
-    apiKey: '565891635356186',
-    apiSecret: 'NfdSs_MBzqxvP_RHt1vCA6GXYpk'
-  }
 })
 
 const CLOUDINARY_FOLDER = 'og'
