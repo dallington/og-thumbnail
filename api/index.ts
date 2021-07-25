@@ -33,35 +33,54 @@ type TypeParams = {
   color?: TypeString
 }
 const generatePreview = async (request: VercelRequest, response: VercelResponse) => {
-  const params:TypeParams = {
-    title: request.query.title,
-    authorName: request.query.authorName,
-    authorImage: request.query.authorImage,
-    date: request.query.date,
-    color: request.query.color
+  try {
+    const params:TypeParams = {
+      title: request.query.title,
+      authorName: request.query.authorName,
+      authorImage: request.query.authorImage,
+      date: request.query.date,
+      color: request.query.color
+    }
+
+    // Spawn a new headless browser
+    const page = await getPage(false)
+
+    await page.setViewport({ width: 1200, height: 800 })
+    await page.evaluateHandle('document.fonts.ready')
+
+    const url = new URL('https://og-thumbnail.vercel.app/OpenGraph')
+    Object.keys(params)
+      .forEach((key) => {
+        const KeyValue = params[key as keyof TypeParams]
+        if (KeyValue) {
+          url.searchParams.set(key, KeyValue as any)
+        }
+      })
+
+    await page.goto(url.toString(), { waitUntil: 'domcontentloaded' })
+    await delay(1000)
+    const file = await page.screenshot({ type: 'png' })
+    // await page.close()
+
+    // response.send(`<img src="data:image/png;base64, ${imageBuffer.toString('base64')}" />`)
+
+    // const file = await getScreenshot(html, isDev)
+
+    response.statusCode = 200
+
+    response.setHeader('Content-Type', 'image/png')
+    response.setHeader(
+      'Cache-Control',
+      'public, immutable, no-transform, s-maxage=31536000, max-age=31536000'
+    )
+
+    response.end(file)
+  } catch (e) {
+    res.statusCode = 500
+    res.setHeader('Content-Type', 'text/html')
+    res.end('<h1>Internal Error</h1><p>Sorry, there was a problem</p>')
+    console.error(e)
   }
-
-  // Spawn a new headless browser
-  const page = await getPage(false)
-
-  await page.setViewport({ width: 1200, height: 800 })
-  await page.evaluateHandle('document.fonts.ready')
-
-  const url = new URL('https://og-thumbnail.vercel.app/OpenGraph')
-  Object.keys(params)
-    .forEach((key) => {
-      const KeyValue = params[key as keyof TypeParams]
-      if (KeyValue) {
-        url.searchParams.set(key, KeyValue as any)
-      }
-    })
-
-  await page.goto(url.toString(), { waitUntil: 'domcontentloaded' })
-  await delay(1000)
-  const imageBuffer = await page.screenshot({ type: 'png' })
-  await page.close()
-
-  response.send(`<img src="data:image/png;base64, ${imageBuffer.toString('base64')}" />`)
 
   // response.status(200).send(`Hello ${name}!`)
 }
