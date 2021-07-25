@@ -14,7 +14,7 @@ interface Options {
   headless: boolean
 }
 
-export async function getOptions(isDev: boolean): Promise<Options> {
+export async function getOptions (isDev: boolean): Promise<Options> {
   let options: Options
 
   if (isDev) {
