@@ -1,12 +1,31 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import puppeteer, { Page } from 'puppeteer-core'
+import { Cloudinary } from '@cloudinary/base'
 import { getOptions } from './_lib/chromeOptions'
+const cloudinary = require('cloudinary').v2
+const hash = require('object-hash')
 
 function delay (time: number) {
   return new Promise((resolve) => {
     setTimeout(() => resolve(true), time)
   })
 };
+
+cloudinary.config({
+  cloud_name: 'dall-dev',
+  api_key: '565891635356186',
+  api_secret: 'NfdSs_MBzqxvP_RHt1vCA6GXYpk'
+})
+
+const cld = new Cloudinary({
+  cloud: {
+    cloudName: 'dall-dev',
+    apiKey: '565891635356186',
+    apiSecret: 'NfdSs_MBzqxvP_RHt1vCA6GXYpk'
+  }
+})
+
+const CLOUDINARY_FOLDER = 'og'
 
 let _page: Page | null
 
@@ -42,6 +61,21 @@ const generatePreview = async (request: VercelRequest, response: VercelResponse)
       color: request.query.color
     }
 
+    console.log(params)
+
+    // Get a unique id for our image based of its params
+    const imageId = hash(params)
+
+    // First check to see if its already uploaded to cloudinary
+    try {
+      const result = await cloudinary.api.resource(`${CLOUDINARY_FOLDER}/${imageId}`)
+      console.log('Got existing image')
+      return response.redirect(301, result.secure_url)
+    } catch (e) {
+    // No existing image
+      console.log('No existing image')
+    }
+
     // Spawn a new headless browser
     const page = await getPage(false)
 
@@ -59,8 +93,18 @@ const generatePreview = async (request: VercelRequest, response: VercelResponse)
 
     await page.goto(url.toString(), { waitUntil: 'domcontentloaded' })
     await delay(1000)
-    const file = await page.screenshot({ type: 'png' })
-    // await page.close()
+    // const file = await page.screenshot({ type: 'png' })
+    const base64 = await page.screenshot({ encoding: 'base64' })
+    const image = await cloudinary.uploader.upload(
+      `data:image/png;base64,${base64}`,
+      {
+        public_id: imageId,
+        folder: CLOUDINARY_FOLDER
+      }
+    )
+
+    return response.redirect(301, image.secure_url)
+    /* // await page.close()
 
     // response.send(`<img src="data:image/png;base64, ${imageBuffer.toString('base64')}" />`)
 
@@ -74,7 +118,7 @@ const generatePreview = async (request: VercelRequest, response: VercelResponse)
       'public, immutable, no-transform, s-maxage=31536000, max-age=31536000'
     )
 
-    response.end(file)
+    response.end(file) */
   } catch (e) {
     response.statusCode = 500
     response.setHeader('Content-Type', 'text/html')
