@@ -1,5 +1,9 @@
 # open-graph-image-generator
 
+Generate imagem for meta tags using query in link 
+
+Development in nuxt, vercel serveless functions, and upload in cloudinary.
+
 ## Build Setup
 
 ```bash
