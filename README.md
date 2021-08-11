@@ -4,7 +4,7 @@ Generate imagem for meta tags using query in link
 
 Development in nuxt, vercel serveless functions, and upload in cloudinary.
 
-[https://og.dallington.dev/OpenGraph?title=Teste%20de%20Thumbnail&description=teste](https://og.dallington.dev/OpenGraph?title=Teste%20de%20Thumbnail&description=teste)
+[https://og.dallington.dev/api?title=Teste%20de%20Thumbnail&description=teste](https://og.dallington.dev/api?title=Teste%20de%20Thumbnail&description=teste)
 
 ## Build Setup
 
