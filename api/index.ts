@@ -11,9 +11,9 @@ function delay (time: number) {
 };
 
 cloudinary.config({
-  cloud_name: 'dall-dev',
-  api_key: '565891635356186',
-  api_secret: 'NfdSs_MBzqxvP_RHt1vCA6GXYpk'
+  cloud_name: process.env.CLOUDNARY_NAME,
+  api_key: process.env.CLOUDNARY_API_KEY,
+  api_secret: process.env.CLOUDNARY_API_SECRET_KEY
 })
 
 const CLOUDINARY_FOLDER = 'og'
